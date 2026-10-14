@@ -98,11 +98,11 @@ async function load(){
   const timeline=makeTimeline(date).filter(x=>x.ms<=now);
   if(!timeline.length)throw new Error("아직 공개된 가격 데이터 시각이 없습니다.");
   const last=timeline.slice(-30);
-  const vals=await Promise.all(last.map(async t=>({t,v:await once("p/"+t.idx)}).catch(()=>({t,v:null}))));
+  const vals=await Promise.all(last.map(async t=>{try{return {t,v:await once("p/"+t.idx)};}catch(e){return {t,v:null};}}));
   tickRows=vals.filter(x=>x.v!==null).map(x=>({idx:x.t.idx,ms:x.t.ms,...parseTick(x.v)})).filter(x=>x.p);
   // News items are fetched only after their scheduled release time.
   const rels=META.newsRel.map((r,i)=>({r,i,ms:baseMs+r})).filter(x=>x.ms<=now).slice(-30);
-  const newsVals=await Promise.all(rels.map(async x=>({x,v:await once("n/"+x.i)}).catch(()=>({x,v:null}))));
+  const newsVals=await Promise.all(rels.map(async x=>{try{return {x,v:await once("n/"+x.i)};}catch(e){return {x,v:null};}}));
   eventRows=[];
   for(const item of newsVals){if(item.v==null)continue;try{const parsed=JSON.parse(item.v);for(const e of parsed){if(stockById[e.s])eventRows.push({s:e.s,rel:e.r,h:String(e.h||""),b:String(e.b||""),t:e.t||"뉴스"});}}catch{}}
   eventRows.sort((a,b)=>a.rel-b.rel);
