@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>도개 모의투자 AI 분석기</title>
+<style>
+:root{color-scheme:dark;--bg:#11131a;--card:#1c202b;--line:#303647;--text:#f2f4f8;--muted:#9ba4b5;--gold:#f0bf58;--green:#ff786e;--blue:#78a7ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}
+main{max-width:1000px;margin:auto;padding:18px}h1{font-size:24px;margin:5px 0}p{color:var(--muted);line-height:1.5}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px;margin:12px 0}
+button{border:0;border-radius:10px;padding:11px 15px;background:var(--gold);color:#171717;font-weight:750}
+.status{color:var(--gold);font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.stock{border:1px solid var(--line);border-radius:12px;padding:12px}.row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.price{font-size:20px;font-weight:750}.muted{color:var(--muted);font-size:12px}.positive{color:var(--green)}.negative{color:var(--blue)}
+.signal{font-size:12px;padding:4px 8px;border-radius:20px;background:#303647}.signal.buy{background:#3b3020;color:#ffd37a}.signal.wait{color:#aeb9ca}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}th{color:var(--muted)}
+.small{font-size:12px;color:var(--muted)}.warn{border-left:3px solid var(--gold);padding-left:10px}
+@media(max-width:600px){main{padding:12px}.price{font-size:18px}table{font-size:12px}}
+</style></head><body><main>
+<div class="top"><div><div class="status">READ-ONLY · 학교 모의투자 분석</div><h1>도개 AI 종목 스캐너</h1><p>가격 흐름과 공개된 뉴스 조각을 비교하는 실험용 도구</p></div><button id="connect">데이터 연결 / 새로고침</button></div>
+<div class="card"><div class="row"><b>연결 상태</b><span id="status" class="status">연결 전</span></div><p id="detail">대회 사이트의 공개 시세 데이터만 읽습니다. 참가자 자산·거래내역은 읽지 않습니다.</p><div class="small" id="updated">아직 데이터 없음</div></div>
+<div class="card"><div class="row"><b>AI 분석 후보</b><span class="small">신호는 예측 보장이 아님</span></div><p>가격 모멘텀·단기 변동성·뉴스 감정을 단순 점수화합니다. 신호 점수는 검증 전 실험값입니다.</p><div id="summary" class="grid"></div></div>
+<div class="card"><b>전체 종목 비교</b><div style="overflow:auto"><table><thead><tr><th>종목</th><th>최근가</th><th>최근 변화</th><th>모멘텀</th><th>분석</th></tr></thead><tbody id="stocks"><tr><td colspan="5">데이터를 연결해 주세요.</td></tr></tbody></table></div></div>
+<div class="card"><div class="row"><b>최근 공개 뉴스</b><span class="small">확인된 뉴스만이 아니라 사이트 표시 항목</span></div><div id="news"><p>아직 뉴스 없음</p></div></div>
+<div class="card warn"><b>중요한 제한</b><p>이 도구는 자동 주문을 하지 않습니다. 데이터베이스 읽기 권한이 거부되거나 공개 시세가 아직 갱신되지 않으면 결과가 표시되지 않을 수 있습니다. 신호 점수는 수익 확률이 아니며, 소문은 사실로 취급하지 않습니다.</p></div>
+</main>
+<script type="application/json" id="meta">{"stocks":[{"id":"dgidx","name":"도개지수 ETF","sector":"ETF"},{"id":"haneul","name":"도개전자","sector":"전자기기"},{"id":"green","name":"도개모빌리티","sector":"전기차"},{"id":"bioheal","name":"도개바이오","sector":"제약/바이오"},{"id":"kpop","name":"도개엔터테인먼트","sector":"엔터테인먼트"},{"id":"square","name":"도개게임즈","sector":"게임"},{"id":"deepmind","name":"도개반도체","sector":"AI반도체"},{"id":"ocean","name":"도개수산","sector":"수산/식품"},{"id":"moonrise","name":"도개코인","sector":"가상자산테마"},{"id":"safebank","name":"도개은행","sector":"금융"},{"id":"startup","name":"도개건설","sector":"건설"}],"days":[{"offset":0,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":1,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":2,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":3,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":4,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":7,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":8,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":9,"slots":[{"time":"08:00","tradeEnd":null,"ticks":1},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"12:20","tradeEnd":"13:20","ticks":60},{"time":"14:10","tradeEnd":"14:20","ticks":10},{"time":"15:10","tradeEnd":"15:20","ticks":10},{"time":"17:30","tradeEnd":"20:00","ticks":150}]},{"offset":10,"slots":[{"time":"08:00","tradeEnd":"08:10","ticks":10},{"time":"08:20","tradeEnd":"08:30","ticks":10},{"time":"08:40","tradeEnd":"08:50","ticks":10},{"time":"09:00","tradeEnd":"09:10","ticks":10},{"time":"09:20","tradeEnd":"09:30","ticks":10},{"time":"09:40","tradeEnd":"09:50","ticks":10},{"time":"10:00","tradeEnd":"10:10","ticks":10},{"time":"10:20","tradeEnd":"10:30","ticks":10},{"time":"10:40","tradeEnd":"10:50","ticks":10},{"time":"11:00","tradeEnd":"11:10","ticks":10},{"time":"11:20","tradeEnd":"11:30","ticks":10},{"time":"11:40","tradeEnd":"11:50","ticks":10}]}],"newsRel":[28800000,33600000,37200000,40800000,44400000,45600000,46800000,51000000,54600000,63000000,64800000,66600000,68400000,70200000,120000000,123600000,127200000,130800000,132000000,133200000,137400000,141000000,149400000,151200000,153000000,154800000,156600000,206400000,210000000,213600000,217200000,218400000,219600000,223800000,227400000,235800000,237600000,239400000,241200000,243000000,292800000,296400000,300000000,303600000,304800000,306000000,310200000,313800000,322200000,324000000,325800000,327600000,329400000,379200000,382800000,386400000,390000000,391200000,392400000,396600000,400200000,408600000,410400000,412200000,414000000,415800000,468000000,486000000,504000000,558000000,568800000,583200000,594000000,638400000,642000000,645600000,649200000,650400000,651600000,655800000,659400000,667800000,669600000,671400000,673200000,675000000,724800000,728400000,732000000,735600000,736800000,738000000,742200000,745800000,754200000,756000000,757800000,759600000,761400000,811200000,814800000,818400000,822000000,823200000,824400000,828600000,832200000,840600000,842400000,844200000,846000000,847800000,892800000,894000000,895200000,896400000,897600000,898800000,900000000,901200000,902400000,903600000,904800000,906000000],"sig":"40950fa64ed595ca"}</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(()=>{"use strict";
+const META=JSON.parse(document.getElementById('meta').textContent);
+const cfg={apiKey:"AIzaSyBrM_WnRwSk_UvdbVuWirgvskKhQFL9EjQ",authDomain:"dogae-4a2c4.firebaseapp.com",databaseURL:"https://dogae-4a2c4-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"dogae-4a2c4",storageBucket:"dogae-4a2c4.firebasestorage.app",messagingSenderId:"724980926689",appId:"1:724980926689:web:43e520a4fb0b53c1840fa0"};
+const $=id=>document.getElementById(id);
+let db=null, baseMs=0, serverOffset=0, tickRows=[], eventRows=[], busy=false;
+const stockById=Object.fromEntries(META.stocks.map(s=>[s.id,s]));
+const fmt=n=>Number(n).toLocaleString("ko-KR",{maximumFractionDigits:0});
+const pct=n=>(n>=0?"+":"")+n.toFixed(2)+"%";
+function kstMs(date,h,m){const [y,mo,d]=date.split("-").map(Number);return Date.UTC(y,mo-1,d,h-9,m,0)}
+function dateAdd(date,days){let d=new Date(Date.parse(date+"T00:00:00Z")+days*86400000);return d.toISOString().slice(0,10)}
+function makeTimeline(date){
+ let rows=[],idx=0;
+ META.days.forEach((day,di)=>{let ds=dateAdd(date,day.offset);
+ day.slots.forEach(slot=>{let [h,m]=slot.time.split(":").map(Number);let start=kstMs(ds,h,m);
+ for(let k=0;k<slot.ticks;k++){rows.push({idx:idx++,ms:start+(slot.tradeEnd?k*60000:0),day:di});}});
+ });
+ return rows;
+}
+function parseTick(v){
+ const parts=String(v).split("|"), prices=(parts[0]||"").split(",");
+ if(prices.length<META.stocks.length)return null;
+ const p={};META.stocks.forEach((s,i)=>p[s.id]=Number(prices[i]));
+ return {p,index:Number(parts[1]||0)};
+}
+function setStatus(t,d){$("status").textContent=t;$("detail").textContent=d}
+function scoreStock(s,series,news){
+ if(series.length<3)return {score:0,signal:"데이터 부족",why:"가격 표본이 3개 미만",change:0,vol:0};
+ const vals=series.map(x=>x.p[s.id]).filter(x=>Number.isFinite(x)&&x>0);
+ if(vals.length<3)return {score:0,signal:"데이터 부족",why:"유효 가격 부족",change:0,vol:0};
+ const a=vals[0],z=vals[vals.length-1],change=(z/a-1)*100;
+ const recent=vals.slice(-6),returns=[];
+ for(let i=1;i<recent.length;i++)returns.push((recent[i]/recent[i-1]-1)*100);
+ const vol=returns.length?Math.sqrt(returns.reduce((sum,x)=>sum+x*x,0)/returns.length):0;
+ const momentum=(recent.length>2?(recent[recent.length-1]/recent[0]-1)*100:change);
+ let newsScore=0,newsLabels=[];
+ for(const n of news.filter(n=>n.s===s.id).slice(-6)){
+  const txt=(n.h+" "+n.b).toLowerCase();
+  const rumor=/소문|루머|미확인|사실 확인 안|공식 확인은 아직/.test(txt);
+  const neg=/악재|하향|부담|매도|논란|하락|리콜|위험/.test(txt);
+  const pos=/호재|상향|순매수|계약|흑자|승인|증가|유치/.test(txt);
+  if(rumor){newsLabels.push("미확인 소문");continue}
+  if(neg!==pos)newsScore+=pos?1:-1;
+  if(neg&&pos)newsScore+=0;
+  newsLabels.push(n.h);
+ }
+ // 해석 가능한 규칙 기반 점수: 단기 모멘텀(최대 ±4), 최근 구간 변화(최대 ±3), 뉴스(최대 ±2), 변동성 패널티
+ let score=Math.max(-4,Math.min(4,momentum*1.5))+Math.max(-3,Math.min(3,change*.35))+Math.max(-2,Math.min(2,newsScore*.7))-Math.min(2,vol*.8);
+ score=Math.round(score*10)/10;
+ let signal=score>=3?"상승 후보":score<=-2?"약세 주의":"관망";
+ let why=`최근 ${pct(momentum)} · 표본변동 ${vol.toFixed(2)}% · 뉴스점수 ${newsScore}`;
+ if(newsLabels.includes("미확인 소문"))why+=" · 미확인 소문 포함";
+ return {score,signal,why,change,vol,price:z};
+}
+async function once(path){const snap=await db.ref("market/"+path+"/d").once("value");return snap.exists()?snap.val():null}
+async function load(){
+ if(busy)return;busy=true;$("connect").disabled=true;
+ try{
+  if(!firebase.apps.length)firebase.initializeApp(cfg);
+  const auth=firebase.auth();db=firebase.database();
+  const cred=await auth.signInAnonymously();
+  const [confSnap,metaSnap,offSnap]=await Promise.all([
+   db.ref("config").once("value"),db.ref("market/meta").once("value"),db.ref(".info/serverTimeOffset").once("value")
+  ]);
+  const conf=confSnap.val()||{},m=metaSnap.val()||{};serverOffset=Number(offSnap.val()||0);
+  if(m.sig!==META.sig)throw new Error("사이트와 분석기 데이터 버전이 다릅니다. 최신 분석기 파일이 필요합니다.");
+  const date=conf.day1Date||"2026-10-12";baseMs=kstMs(date,0,0);
+  const now=Date.now()+serverOffset-500;
+  const timeline=makeTimeline(date).filter(x=>x.ms<=now);
+  if(!timeline.length)throw new Error("아직 공개된 가격 데이터 시각이 없습니다.");
+  const last=timeline.slice(-30);
+  const vals=await Promise.all(last.map(async t=>({t,v:await once("p/"+t.idx)}).catch(()=>({t,v:null}))));
+  tickRows=vals.filter(x=>x.v!==null).map(x=>({idx:x.t.idx,ms:x.t.ms,...parseTick(x.v)})).filter(x=>x.p);
+  // News items are fetched only after their scheduled release time.
+  const rels=META.newsRel.map((r,i)=>({r,i,ms:baseMs+r})).filter(x=>x.ms<=now).slice(-30);
+  const newsVals=await Promise.all(rels.map(async x=>({x,v:await once("n/"+x.i)}).catch(()=>({x,v:null}))));
+  eventRows=[];
+  for(const item of newsVals){if(item.v==null)continue;try{const parsed=JSON.parse(item.v);for(const e of parsed){if(stockById[e.s])eventRows.push({s:e.s,rel:e.r,h:String(e.h||""),b:String(e.b||""),t:e.t||"뉴스"});}}catch{}}
+  eventRows.sort((a,b)=>a.rel-b.rel);
+  render();
+  $("updated").textContent="마지막 확인: "+new Date(now).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+" · 가격 표본 "+tickRows.length+"개 · 뉴스 "+eventRows.length+"개";
+  setStatus("연결 완료","공개된 시세 조각만 읽었습니다. 참가자 자산·거래내역은 요청하지 않았습니다.");
+ }catch(e){setStatus("연결 실패",String(e.message||e));$("updated").textContent="브라우저 콘솔 없이도 위 오류 메시지를 확인해 주세요."}
+ finally{busy=false;$("connect").disabled=false}
+}
+function render(){
+ const rows=META.stocks.map(s=>({s,r:scoreStock(s,tickRows,eventRows)})).sort((a,b)=>b.r.score-a.r.score);
+ $("stocks").innerHTML=rows.map(({s,r})=>`<tr><td><b>${s.name}</b><div class="muted">${s.sector}</div></td><td>${r.price?fmt(r.price)+"원":"—"}</td><td class="${r.change>=0?'positive':'negative'}">${r.price?pct(r.change):"—"}</td><td>${r.score.toFixed(1)}</td><td><span class="signal ${r.signal==='상승 후보'?'buy':'wait'}">${r.signal}</span><div class="muted">${r.why}</div></td></tr>`).join("");
+ const candidates=rows.slice(0,3);
+ $("summary").innerHTML=candidates.map(({s,r})=>`<div class="stock"><div class="row"><b>${s.name}</b><span class="signal ${r.signal==='상승 후보'?'buy':'wait'}">${r.signal}</span></div><div class="price">${r.price?fmt(r.price)+"원":"데이터 부족"}</div><p>${r.why}</p><div class="muted">점수 ${r.score.toFixed(1)} · 매수 추천 확정 아님</div></div>`).join("");
+ const recent=eventRows.slice(-12).reverse();
+ $("news").innerHTML=recent.length?recent.map(n=>`<div class="stock" style="margin:8px 0"><div class="row"><b>${stockById[n.s]?.name||n.s}</b><span class="muted">${new Date(baseMs+n.rel).toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})}</span></div><div style="margin-top:6px">${n.h}</div><div class="muted" style="margin-top:4px">${n.b}</div></div>`).join(""):"<p>아직 읽을 수 있는 뉴스 조각이 없습니다.</p>";
+}
+$("connect").addEventListener("click",load);
+})();
+</script></body></html>
